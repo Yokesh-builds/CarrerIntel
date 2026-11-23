@@ -1,0 +1,101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Job Details | CareerIntel</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-mark">CI</span>
+        <span>Career<span class="brand-accent">Intel</span></span>
+    </a>
+
+    <span class="top-note">JOB DISCOVERY PLATFORM</span>
+</header>
+
+<main class="container details-container">
+
+    {% if job %}
+
+        <a class="back-link" href="{{ url_for('index') }}">
+            ← Back to job search
+        </a>
+
+        <section class="details-card">
+
+            <span class="source-tag">{{ job.source }}</span>
+
+            <h1>{{ job.title }}</h1>
+
+            <h2>{{ job.company }}</h2>
+
+            <div class="job-meta details-meta">
+
+                <span>{{ job.location or 'Location not specified' }}</span>
+
+                {% if job.department %}
+                    <span>{{ job.department }}</span>
+                {% endif %}
+
+                {% if job.employment_type %}
+                    <span>{{ job.employment_type }}</span>
+                {% endif %}
+
+            </div>
+
+            {% if job.posted_at %}
+                <p class="posted-date">
+                    Posted: {{ job.posted_at }}
+                </p>
+            {% endif %}
+
+            {% if job.job_url %}
+                <a class="apply-button"
+                   href="{{ job.job_url }}"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    Apply for this job ↗
+                </a>
+            {% endif %}
+
+            <hr>
+
+            <h3>Job Description</h3>
+
+            <div class="description">
+                {% if job.description %}
+                    {{ job.description }}
+                {% else %}
+                    Job description is not available.
+                {% endif %}
+            </div>
+
+        </section>
+
+    {% else %}
+
+        <section class="empty-state">
+            <h1>Page not found</h1>
+            <p>The requested job listing could not be found.</p>
+
+            <a class="details-button"
+               href="{{ url_for('index') }}">
+                Return to job search
+            </a>
+        </section>
+
+    {% endif %}
+
+</main>
+
+</body>
+</html>

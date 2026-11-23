@@ -1,0 +1,286 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>CareerIntel | Job Discovery</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}">
+        <span class="brand-mark">CI</span>
+        <span>Career<span class="brand-accent">Intel</span></span>
+    </a>
+
+    <span class="top-note">JOB DISCOVERY PLATFORM</span>
+</header>
+
+<main class="container">
+
+    <section class="hero">
+        <div>
+            <p class="eyebrow">YOUR NEXT OPPORTUNITY STARTS HERE</p>
+
+            <h1>
+                Find a role that<br>
+                <span>moves you forward.</span>
+            </h1>
+
+            <p class="hero-copy">
+                Discover job openings collected from
+                Greenhouse, Lever and Ashby in one place.
+            </p>
+        </div>
+
+        <form action="{{ url_for('collect') }}" method="post">
+            <button class="collect-button" type="submit">
+                Collect latest jobs
+            </button>
+        </form>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="notice {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="stats">
+
+        <article class="stat-card">
+            <span class="stat-label">TOTAL JOBS</span>
+            <strong>{{ statistics.total_jobs }}</strong>
+            <span class="stat-foot">Available in your database</span>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">COMPANIES</span>
+            <strong>{{ statistics.total_companies }}</strong>
+            <span class="stat-foot">Across collected listings</span>
+        </article>
+
+        <article class="stat-card">
+            <span class="stat-label">JOB SOURCES</span>
+            <strong>{{ statistics.total_sources }}</strong>
+            <span class="stat-foot">Connected job platforms</span>
+        </article>
+
+    </section>
+
+    <section class="search-section">
+
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">OPPORTUNITY EXPLORER</p>
+                <h2>Explore job openings</h2>
+            </div>
+
+            <span class="result-count">
+                {{ total }} matching jobs
+            </span>
+        </div>
+
+        <form class="search-form"
+              method="get"
+              action="{{ url_for('index') }}">
+
+            <div class="search-input-wrap">
+                <span>⌕</span>
+
+                <input
+                    type="search"
+                    name="q"
+                    value="{{ keyword }}"
+                    placeholder="Python, SQL, Flask"
+                    aria-label="Search jobs using comma-separated keywords">
+            </div>
+
+            <select name="source" aria-label="Filter by source">
+                <option value="">All sources</option>
+
+                <option value="Greenhouse"
+                    {% if selected_source == 'Greenhouse' %}selected{% endif %}>
+                    Greenhouse
+                </option>
+
+                <option value="Lever"
+                    {% if selected_source == 'Lever' %}selected{% endif %}>
+                    Lever
+                </option>
+
+                <option value="Ashby"
+                    {% if selected_source == 'Ashby' %}selected{% endif %}>
+                    Ashby
+                </option>
+            </select>
+
+            <select name="company" aria-label="Filter by company">
+                <option value="">All companies</option>
+
+                {% for item in companies %}
+                    <option value="{{ item }}"
+                        {% if selected_company == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="location" aria-label="Filter by location">
+                <option value="">All locations</option>
+
+                {% for item in locations %}
+                    <option value="{{ item }}"
+                        {% if selected_location == item %}selected{% endif %}>
+                        {{ item }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <button class="search-button" type="submit">
+                Search jobs
+            </button>
+
+            {% if keyword or selected_source or selected_company or selected_location %}
+                <a class="clear-link" href="{{ url_for('index') }}">
+                    Clear
+                </a>
+            {% endif %}
+
+        </form>
+
+        <p class="search-hint">
+            Tip: Separate keywords with commas. All keywords must match
+            the same job, even if they appear in different fields.
+        </p>
+
+        <div class="jobs-list">
+
+            {% for job in jobs %}
+
+                <article class="job-card">
+
+                    <div class="company-logo">
+                        {{ (job.company or 'C')[0]|upper }}
+                    </div>
+
+                    <div class="job-main">
+
+                        <h3>
+                            <a class="job-title-link"
+                               href="{{ url_for('job_details', job_id=job.id) }}">
+                                {{ job.title }}
+                            </a>
+                        </h3>
+
+                        <p class="company-name">
+                            {{ job.company }}
+                        </p>
+
+                        <div class="job-meta">
+
+                            <span>
+                                {{ job.location or 'Location not specified' }}
+                            </span>
+
+                            {% if job.department %}
+                                <span>{{ job.department }}</span>
+                            {% endif %}
+
+                            {% if job.employment_type %}
+                                <span>{{ job.employment_type }}</span>
+                            {% endif %}
+
+                        </div>
+
+                        <div class="job-bottom">
+
+                            <span class="source-tag">
+                                {{ job.source }}
+                            </span>
+
+                            {% if job.posted_at %}
+                                <span class="posted-date">
+                                    Posted: {{ job.posted_at }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <a class="details-button"
+                       href="{{ url_for('job_details', job_id=job.id) }}">
+                        View details
+                    </a>
+
+                </article>
+
+            {% else %}
+
+                <div class="empty-state">
+                    <h3>No job listings found</h3>
+
+                    <p>
+                        Try different keywords or collect the latest jobs
+                        from your connected sources.
+                    </p>
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% if total_pages > 1 %}
+
+            <nav class="pagination" aria-label="Job result pages">
+
+                {% if page > 1 %}
+                    <a href="{{ url_for(
+                        'index',
+                        q=keyword,
+                        source=selected_source,
+                        company=selected_company,
+                        location=selected_location,
+                        page=page-1
+                    ) }}">Previous</a>
+                {% endif %}
+
+                <span>Page {{ page }} of {{ total_pages }}</span>
+
+                {% if page < total_pages %}
+                    <a href="{{ url_for(
+                        'index',
+                        q=keyword,
+                        source=selected_source,
+                        company=selected_company,
+                        location=selected_location,
+                        page=page+1
+                    ) }}">Next</a>
+                {% endif %}
+
+            </nav>
+
+        {% endif %}
+
+    </section>
+
+    <footer>
+        CareerIntel · Job information is collected from
+        external public job-board feeds.
+    </footer>
+
+</main>
+
+</body>
+</html>
